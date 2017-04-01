@@ -19,7 +19,7 @@ def main():
 
   print "Running analysis on corpus."
   print time.strftime('%X %x')
-  tools = ['dyntrace']
+  tools = ['dyntracecounts']
 
   print "Cleaning {}".format(project)
   common.clean_project(project)
