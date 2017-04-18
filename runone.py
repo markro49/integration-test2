@@ -24,7 +24,7 @@ def main():
   print "Cleaning {}".format(project)
   common.clean_project(project)
   print "Analyzing {}".format(project)
-  common.run_dljc(project, tools)
+  common.run_dljc(project, tools, ['--log_to_stderr'])
   print time.strftime('%X %x')
 
 if __name__ == "__main__":
