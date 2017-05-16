@@ -141,6 +141,10 @@ def get_dljc_dir_for_project(project_name):
   else:
     return None
 
+def clean_corpus():
+  for project in get_project_list():
+    clean_project(project)
+
 def clean_project(project_name):
   info = project_info(project_name)
   project_dir = get_project_dir(project_name)
@@ -208,7 +212,10 @@ def run_dljc(project_name, tools=[], options=[]):
     dljc_command.extend(options)
     dljc_command.append('--')
     dljc_command.extend(build_command)
-    run_cmd(dljc_command, 'dljc')
+    result = run_cmd(dljc_command, 'dljc')
+    if result['return_code'] != 0:
+      print "DLJC command failed on {}".format(project_name)
+      sys.exit(1)
 
 def ensure_java_home():
   if not os.environ.get('JAVA_HOME'):
