@@ -37,7 +37,12 @@ def run_cmd(cmd, output=False, timeout=None):
   timer = None
   out = None
   out_file = None
-  friendly_cmd = ' '.join(cmd)
+
+  if isinstance(cmd, basestring):
+    friendly_cmd = cmd
+    cmd = cmd.split()
+  else:
+    friendly_cmd = ' '.join(cmd)
 
   if hasattr(output, 'write'):
     out = output
@@ -51,7 +56,7 @@ def run_cmd(cmd, output=False, timeout=None):
       out.flush()
 
   def kill_proc(proc, stats):
-    output('Timed out on {}'.format(friendly_cmd))
+    output('Timed out after {} seconds on {}'.format(timeout, friendly_cmd))
     stats['timed_out'] = True
     proc.kill()
 
@@ -194,6 +199,7 @@ def copy_dyntrace_files(project_name):
 def run_dljc(project_name, tools=[], options=[]):
   project = project_info(project_name)
   timelimit = project.get('timelimit') or 900
+  extra_opts = project.get('dljc-opt')
 
   copy_dyntrace_files(project_name)
   if not os.environ.get('DAIKONDIR'):
@@ -210,6 +216,8 @@ def run_dljc(project_name, tools=[], options=[]):
     if tools:
       dljc_command.extend(['-t', ','.join(tools)])
     dljc_command.extend(options)
+    if extra_opts:
+      dljc_command.extend(extra_opts.split())
     dljc_command.append('--')
     dljc_command.extend(build_command)
     result = run_cmd(dljc_command, 'dljc')
@@ -255,8 +263,10 @@ def recompile_checker_framework():
 
   with cd(checker_framework_inference_dir):
     setup_checker_framework_env()
-    run_cmd(["gradle", "dist", "-i"], 'checker_build')
+    run_cmd("gradle dist -i", 'checker_build')
 
   with cd(ontology_dir):
     setup_checker_framework_env()
-    run_cmd(["gradle", "build", "-i"], 'checker_build')
+    run_cmd("gradle build -i -x test", 'checker_build')
+    install_cmd = "mvn install:install-file -Dfile=dist/ontology.jar -DgroupId=pascaliUWat -DartifactId=ontology -Dversion=1.0 -Dpackaging=jar"
+    run_cmd(install_cmd, 'checker_build')
